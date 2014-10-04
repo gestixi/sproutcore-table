@@ -1,0 +1,101 @@
+
+@mixin deg($i: #fff, $j: #000) {
+  background: -webkit-gradient(linear, 0% 0%, 0% 100%, from($i), to($j));
+  background: -moz-linear-gradient($i, $j);
+  background: -o-linear-gradient($i, $j);
+  background: linear-gradient($i, $j);
+  -pie-background: linear-gradient($i, $j);
+  behavior: url(fonctions/PIE.htc);
+}
+@mixin ellipsis {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+
+.sc-view.sc-table-view {
+	background-color: #FFF; 
+  white-space: nowrap; 
+	
+	.sc-table-header-background-view { 
+    background-color: #F3F3F3;
+    box-sizing: border-box; 
+    border-bottom: 1px solid #A6A6A6; 
+  }
+	
+	
+	/* Table Header */
+	.sc-table-header-scroll-view {
+		.sc-collection-view.collection.sc-table-header-view { background: transparent; cursor: move;
+			
+		 	div { position: absolute; overflow: hidden; }
+		
+			/* Column Headers */
+			.sc-table-column-header-view { 
+				font-size: 11px; color: #2B2B2B; font-weight: bold; cursor: move;
+				
+				&.sel { 
+          background-color: #F3F3F3; 
+          border-bottom: 1px solid #A6A6A6; 
+        } 
+			
+				.col-name { top: 4px; left: 5px; bottom: 0px; right: 12px; }
+				.col-border { top: 0px; left: 0px; bottom: 0px; right: 0px; border-right: 1px solid #d6d6d6; }
+	
+				.resize-handle { 
+          top: 6px; right: 0px; width: 10px; height: 10px; 
+          cursor: col-resize;	
+          @include slice("images/grippy.png");
+
+					&:hover { @include slice("images/grippy-hover.png"); cursor: ew-resize; }
+				}
+
+				&.sort-indicator { 
+          background-color: #BBB; 
+
+          .asc, .desc {
+            position: absolute;
+            top: 7px; right: 15px; width: 0; height: 0; 
+            opacity: 0.75;
+            border-right: 5px solid transparent;
+            border-left: 5px solid transparent;
+          }
+          .asc { 
+            border-bottom: 5px solid black;
+          }
+          .desc { 
+            border-top: 5px solid black;
+          }
+			  }
+			}
+		}
+	}
+	/* Table Rows */
+	.sc-table-body-scroll-view .sc-collection-view.sc-list-view.collection .sc-table-row-view {
+ 		div { position: absolute; }
+	  .cell {
+	  	.text { 
+        top: 50%;
+        height: 20px;
+        margin-top: -8px;
+        left: 2px; right: 1px; 
+        cursor: default; 
+        @include ellipsis; 
+      }
+			.icon { margin-top: -8px; }
+
+			.checkbox { margin-top: -7px; }
+	  }
+  	
+		&.sel { 
+			background-color: #608AB9; color: #FFF; 
+		}
+	}
+}
+.sc-table-header-ghost { background-color: #DDD; font-size: 11px !important; color: #2B2B2B; font-weight: bold; padding-left: 5px; }
+
+
+
+
+
