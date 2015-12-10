@@ -168,11 +168,13 @@ SC.TableHeaderView = SC.CollectionView.extend({
   },
 
 
-	mouseDown: function(evt) {
+  mouseDown: function(evt) {
     var itemView = this.itemViewForEvent(evt);
 
-		if(evt.which == 3) {
-			this.invokeDelegateMethod('rightClicOnHeadCell', this, itemView, evt);
+    this._prevX = evt.pageX;
+
+    if(evt.which == 3) {
+      this.invokeDelegateMethod('rightClicOnHeadCell', this, itemView, evt);
       return false;
     }
 
@@ -183,7 +185,7 @@ SC.TableHeaderView = SC.CollectionView.extend({
       this._itemViewWidth = itemView.get('frame').width;
     }
 
-		return sc_super();
+    return sc_super();
   },
 
   // Is not used and throw an error when dragging and realese an header at 
@@ -202,7 +204,12 @@ SC.TableHeaderView = SC.CollectionView.extend({
       var itemView = info.itemView,
           content = itemView.get('content');
 
-      var newWidth = Math.max(itemViewWidth + evt.pageX - event.pageX, itemView.get('minWidth'));
+      var prevX = this._prevX;
+      var newWidth = itemViewWidth;
+      if ( event.pageX )
+        newWidth = Math.max(itemViewWidth + evt.pageX - event.pageX, itemView.get('minWidth'));
+      else if ( prevX )
+        newWidth = Math.max( itemViewWidth + evt.pageX - prevX, itemView.get('minWidth') );
       
       itemView.setPathIfChanged('content.width', newWidth);
 
