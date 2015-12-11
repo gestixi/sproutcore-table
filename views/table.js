@@ -49,9 +49,9 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
 	
   showAlternatingRows: true,
 	
-	canReorderContent: false,
+  canReorderContent: false,
 	
-	canDeleteContent: false,
+  canDeleteContent: false,
 	
   /*
     Target for action fired when double-clicking on a row
@@ -78,11 +78,16 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
   */
   isVerticalScrollerVisible: true,
 
-	// ................................................................................................
+  /*
+    Does selecting a column cause a column action
+  */
+  actOnColumnSelect: false,
+
+  // ................................................................................................
   // COLUMNS
   //
 
-	/*
+  /*
     Array of column objects (each should mix in SC.Column).  May be bound
     to an array controller if desired.
   */
@@ -213,13 +218,15 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
     this._bodyScrollView = bodyScrollView;
     this._bodyView = bodyScrollView.get('contentView');
 		
-		// Afin que le background soit visible sur toute la largeur du header, meme au dessus de la scroll bar car celui-ci est
-		// ajusté par la suite pour éviter qu'il se décale lors d'un scroll vers la droite
-		headerBackGroundView = this.createChildView(SC.View, { 
-			layout: { left: 0, right: 0, top: 0, height: headerHeight },
-			classNames: 'sc-table-header-background-view', 
-		});
-			
+    // Afin que le background soit visible sur toute la largeur du header, meme au dessus de la scroll bar car celui-ci est
+    // ajusté par la suite pour éviter qu'il se décale lors d'un scroll vers la droite
+    // So that the background is visible across the width of the header, even above the scroll bar because it is 
+    // adjusted thereafter to prevent it from shifting during a scroll to the right
+    headerBackGroundView = this.createChildView(SC.View, { 
+      layout: { left: 0, right: 0, top: 0, height: headerHeight },
+      classNames: 'sc-table-header-background-view', 
+    });
+
     headerScrollView = this.createChildView(SC.ScrollView, {
       classNames: 'sc-table-header-scroll-view',
       layout: { left: 0, right: 0, top: 0, height: headerHeight },
@@ -234,7 +241,7 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         canReorderContentBinding: SC.Binding.from('canReorderColumns', this),
         target: this,
         action: '_onColumnAction',
-        actOnSelect: true,
+        actOnSelect: this.get( 'actOnColumnSelect' )
       }),
 			
       hasVerticalScroller: false, // header never scrolls vertically
@@ -377,7 +384,7 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
   */
   _onColumnAction: function(sender) {
     var del = this.get('tableDelegate'),
-    		selection = sender ? sender.get('selection') : null;
+        selection = sender ? sender.get('selection') : null;
     var col, sort, dir = SC.SORT_DIRECTION_ASCENDING, key;
 
     if (selection && (selection.get('length') === 1)) {
@@ -386,17 +393,20 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
       
       key = col.get('key');
 
-			// Le premier clic tri ASC - Le deuxieme clic tri DEC - Le troisième annule le tri
+      // Le premier clic tri ASC - Le deuxieme clic tri DEC - Le troisième annule le tri
+      // The first click for ASC - click the second for DEC - The third cancels sorting
       if (sort && (sort.key === key)) {
-      	if (sort.direction === SC.SORT_DIRECTION_ASCENDING)  dir = SC.SORT_DIRECTION_DESCENDING;
-				else if (sort.direction === SC.SORT_DIRECTION_DESCENDING) {
-						// Si le content est vient d'un arrayController, alors, on permet l'annulation de tri au bout de trois clic
-						// On ne peut pas annuler le tri si c'est au array normal car le tri initial n'est pas mémorisé
-      		 if (SC.kindOf(this.get('content'), SC.ArrayController)) dir = null; 
-      		 else dir = SC.SORT_DIRECTION_ASCENDING;
-      	}
-			}
-      
+        if (sort.direction === SC.SORT_DIRECTION_ASCENDING)  dir = SC.SORT_DIRECTION_DESCENDING;
+        else if (sort.direction === SC.SORT_DIRECTION_DESCENDING) {
+          // Si le content est vient d'un arrayController, alors, on permet l'annulation de tri au bout de trois clic
+          // If content is just an arrayController then it allows the sorting to be canceled after third click.
+          // On ne peut pas annuler le tri si c'est au array normal car le tri initial n'est pas mémorisé
+          // You can not cancel the sort if the normal array as the initial sort is not stored.
+          if (SC.kindOf(this.get('content'), SC.ArrayController)) dir = null; 
+          else dir = SC.SORT_DIRECTION_ASCENDING;
+        }
+      }
+ 
       this.tableColumnDidRequestSort(col, this.get('columns').indexOf(col), dir);
     }
 
