@@ -14,7 +14,7 @@
 
 SC.TableRowView = SC.ListItemView.extend({
 
-  isReusable: true,
+  isReusable: false,
   
   // PUBLIC PROPERTIES
   
