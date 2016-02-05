@@ -168,22 +168,32 @@ SC.TableHeaderView = SC.CollectionView.extend({
   },
 
 
-	mouseDown: function(evt) {
+  mouseDown: function(evt) {
     var itemView = this.itemViewForEvent(evt);
 
-		if(evt.which == 3) {
-			this.invokeDelegateMethod('rightClicOnHeadCell', this, itemView, evt);
+    if(evt.which == 3) {
+      this.invokeDelegateMethod('rightClicOnHeadCell', this, itemView, evt);
       return false;
     }
 
     // If there is no header, we do not go futher
     if (!itemView) return false;
 
+    this._mouseDownInfo = {
+      isDraggingHandle: false,
+      itemView: itemView,
+      itemViewWidth: null,
+      startPageX: evt.pageX,
+      startWidth: this.get('frame').width
+    };
+
     if (evt.target.className === 'resize-handle') {
-      this._itemViewWidth = itemView.get('frame').width;
+      this._mouseDownInfo.itemViewWidth = itemView.get('frame').width;
+      this._mouseDownInfo.isDraggingHandle = true;
+      return true;
     }
 
-		return sc_super();
+    return sc_super();
   },
 
   // Is not used and throw an error when dragging and realese an header at 
@@ -194,15 +204,13 @@ SC.TableHeaderView = SC.CollectionView.extend({
 
 
   mouseDragged: function(evt) {
-    var itemViewWidth = this._itemViewWidth,
-        info = this.mouseDownInfo,
-        event = info.event;
+    var info = this._mouseDownInfo;
         
-    if (itemViewWidth) { 
+    if ( info && info.isDraggingHandle && info.itemViewWidth ) { 
       var itemView = info.itemView,
           content = itemView.get('content');
 
-      var newWidth = Math.max(itemViewWidth + evt.pageX - event.pageX, itemView.get('minWidth'));
+      var newWidth = Math.max( info.itemViewWidth + evt.pageX - info.startPageX, itemView.get('minWidth') );
       
       itemView.setPathIfChanged('content.width', newWidth);
 
@@ -217,10 +225,13 @@ SC.TableHeaderView = SC.CollectionView.extend({
   },
 
   mouseUp: function(evt) {
-    if (this._itemViewWidth) { 
-      this._itemViewWidth = null;
+    if (this._mouseDownInfo) { 
+      if (this._mouseDownInfo.itemViewWidth) { 
+        this._mouseDownInfo = null;
+        return true;
+      }
 
-      return true;
+      this._mouseDownInfo = null;
     }
     
     return sc_super();
