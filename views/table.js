@@ -144,10 +144,10 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
 
     // @if (debug)
     if (del && !del.isTableDelegate) {
-      console.error("A delegate is defined but it doesn't implement SC.TableDelegate.");
+      SC.warn("A delegate is defined but it doesn't implement SC.TableDelegate.");
     }
     if (!del && content && !content.isTableDelegate) {
-      console.error("content is defined but it doesn't implement SC.TableDelegate.", content);
+      SC.warn("content is defined but it doesn't implement SC.TableDelegate.", content);
     }
     // @endif
 
@@ -306,7 +306,7 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         didSort = true;
       }
       else {
-        console.warn('Error in TableView(%@)._sortContent(): Content type is not recognized as sortable.'.fmt(this));
+        SC.warn('Error in TableView(%@)._sortContent(): Content type is not recognized as sortable.'.fmt(this));
       }
 
       // Update the view to show how we're sorting over now.

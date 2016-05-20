@@ -30,8 +30,6 @@ SC.TableHeaderView = SC.CollectionView.extend({
 
   ghostActsLikeCursor: true,
 
-
-
   /*
     View class definition for showing the insertion point for reorder dragging.
   */
@@ -46,7 +44,6 @@ SC.TableHeaderView = SC.CollectionView.extend({
   }),
 
   // PUBLIC METHODS
-
   layoutForContentIndex: function(contentIndex) {
     var content = this.get('content');
     var left = 0, width, ret;
@@ -89,24 +86,23 @@ SC.TableHeaderView = SC.CollectionView.extend({
     return exampleClass.create(attrs);
   },
 
-
 	invokeDelegateMethod: function(methodName) {
 		var delegate = this.get('tableDelegate'),
 				method = delegate[methodName],
     		args = SC.A(arguments),
-				tableView = this.parentView.parentView.parentView;
+        tableView = this.get('ownerTableView');
 
     args = args.slice(1, args.length);
 		args.unshift(tableView);
     return method.apply(delegate, args);
   },
 
-
-
   collectionViewDragViewFor: function(view, dragContent) {
     var itemView;
 
-    dragContent.forEach(function(i) { itemView = this.itemViewForContentIndex(i); }, this);
+    dragContent.forEach(function(i) {
+      itemView = this.itemViewForContentIndex(i);
+    }, this);
 
 		if (itemView) {
 			return SC.LabelView.create({
@@ -218,7 +214,7 @@ SC.TableHeaderView = SC.CollectionView.extend({
 
       var newWidth = Math.max(itemViewWidth + evt.pageX - event.pageX, itemView.get('minWidth'));
 
-      itemView.setPathIfChanged('content.width', newWidth);
+      content.setIfChanged('width', newWidth);
 
       this.invokeDelegateMethod('columnSizeDidChange', this, itemView, evt, newWidth);
 

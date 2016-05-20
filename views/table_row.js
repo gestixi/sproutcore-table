@@ -32,17 +32,14 @@ SC.TableRowView = SC.ListItemView.extend({
     return this.getPath('displayDelegate.tableDelegate');
   }.property('displayDelegate').cacheable(),
 
-
-
   // PUBLIC METHODS
-
 
   render: function(context) {
     var tableDelegate = this.get('tableDelegate'),
         left = 3,
         content = this.get('content'),
         contentIndex = this.contentIndex,
-        columns = this.getPath('displayDelegate.columns'),
+        columns = this.getDelegateProperty('colums', this.displayDelegate),
         contentCheckboxKey = this.contentCheckboxKey,
         columnsLength = columns.length,
         alternate = ((contentIndex % 2 === 0) ? 'even' : 'odd'),
@@ -74,7 +71,7 @@ SC.TableRowView = SC.ListItemView.extend({
       context = context.push('</div>');
 
       left += width;
-    };
+    }
   },
 
 
@@ -105,7 +102,7 @@ SC.TableRowView = SC.ListItemView.extend({
         width = col.width || 0;
 
         $cell = jQuery.find('.cell.col-'+index);
-        $cell.css({ width: width+'px', left: left+'px', })
+        $cell.css({ width: width+'px', left: left+'px', });
 
         if (contentCheckboxKey && contentCheckboxKey.contains(key)) {
           var value = SC.get(content, key) || false;
@@ -116,7 +113,7 @@ SC.TableRowView = SC.ListItemView.extend({
         }
 
         left += width;
-      };
+      }
     }
 
     this._lastContent = content;
@@ -163,14 +160,13 @@ SC.TableRowView = SC.ListItemView.extend({
 
 
   // CHECKBOX EDTITING
-
   updateCheckbox: function (jQuery, state) {
     var renderer = this.get('theme').checkboxRenderDelegate;
 
     var source = this._checkboxRenderSource;
     if (!source) {
       source = this._checkboxRenderSource =
-      SC.Object.create({ renderState: {}, theme: this.get('theme') });
+        SC.Object.create({ renderState: {}, theme: this.get('theme') });
     }
 
     source
