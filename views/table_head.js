@@ -168,6 +168,23 @@ SC.TableHeaderView = SC.CollectionView.extend({
   },
 
 
+  /** @private */
+  touchStart: function(evt) {
+    this.touchDownInfo = { event: SC.copy(evt) };
+    return this.mouseDown ? this.mouseDown(evt) : false;
+  },
+
+  /** @private */
+  touchesDragged: function(evt) {
+    return this.mouseDragged ? this.mouseDragged(evt) : false;
+  },
+
+  /** @private */
+  touchEnd: function(evt) {
+    return this.mouseUp ? this.mouseUp(evt) : false;
+  },
+
+
 	mouseDown: function(evt) {
     var itemView = this.itemViewForEvent(evt);
 
@@ -190,7 +207,7 @@ SC.TableHeaderView = SC.CollectionView.extend({
 
   mouseDragged: function(evt) {
     var itemViewWidth = this._itemViewWidth,
-        info = this.mouseDownInfo,
+        info = this.mouseDownInfo || this.touchDownInfo,
         event = info.event;
         
     if (itemViewWidth) { 
