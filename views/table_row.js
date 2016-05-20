@@ -15,16 +15,16 @@
 SC.TableRowView = SC.ListItemView.extend({
 
   isReusable: true,
-  
+
   // PUBLIC PROPERTIES
-  
+
   classNames: 'sc-table-row-view',
 
 
   contentCheckboxKey: null,
 
   contentValueKey: null,
-  
+
 
   /*
     @read-only
@@ -32,22 +32,22 @@ SC.TableRowView = SC.ListItemView.extend({
   tableDelegate: function() {
     return this.getPath('displayDelegate.tableDelegate');
   }.property('displayDelegate').cacheable(),
-  
 
-  
+
+
   // PUBLIC METHODS
 
 
   render: function(context) {
     var tableDelegate = this.get('tableDelegate'),
-        left = 3, 
+        left = 3,
         content = this.get('content'),
         contentIndex = this.contentIndex,
         columns = this.getPath('displayDelegate.columns'),
         contentCheckboxKey = this.contentCheckboxKey,
         columnsLength = columns.length,
         alternate = ((contentIndex % 2 === 0) ? 'even' : 'odd'),
-        col, key;
+        col, key, width;
 
     this.updateContentObservers(content, null);
 
@@ -64,14 +64,14 @@ SC.TableRowView = SC.ListItemView.extend({
       width = col.width || 0;
       context = context.push('<div class="cell col-'+index+'" style="left: '+left+'px; top: 0px; bottom: 0px; width: '+width+'px;">');
 
-      if (contentCheckboxKey && inArray(key, contentCheckboxKey)) {
-        var value = content ? (content.get ? content.get(key) : content[key]) : false;
+      if (contentCheckboxKey && contentCheckboxKey.contains(key)) {
+        var value = SC.get(content, key) || false;
         this.renderCheckbox(context, value);
       }
       else {
         tableDelegate.renderTableCellContent(this, context, content, contentIndex, col, key);
       }
-      
+
       context = context.push('</div>');
 
       left += width;
@@ -90,7 +90,7 @@ SC.TableRowView = SC.ListItemView.extend({
         otherAlternate = ((contentIndex % 2 !== 0) ? 'even' : 'odd'),
         alternate = ((contentIndex % 2 === 0) ? 'even' : 'odd'),
         contentCheckboxKey = this.contentCheckboxKey,
-        col, key, $cell; 
+        col, key, $cell;
 
     this.updateContentObservers(content, lastContent);
 
@@ -98,7 +98,7 @@ SC.TableRowView = SC.ListItemView.extend({
 
     jQuery.removeClass(otherAlternate);
     jQuery.addClass(alternate);
-    
+
     if (content && columns && columns.isEnumerable) {
       for (var index=0; index < columnsLength; index++) {
         col = columns[index];
@@ -108,14 +108,14 @@ SC.TableRowView = SC.ListItemView.extend({
         $cell = jQuery.find('.cell.col-'+index);
         $cell.css({ width: width+'px', left: left+'px', })
 
-        if (contentCheckboxKey && inArray(key, contentCheckboxKey)) {
-          var value = content ? (content.get ? content.get(key) : content[key]) : false;
+        if (contentCheckboxKey && contentCheckboxKey.contains(key)) {
+          var value = SC.get(content, key) || false;
           this.updateCheckbox($cell, value);
         }
         else {
           tableDelegate.updateTableCellContent(this, $cell, content, contentIndex, col, key);
         }
-        
+
         left += width;
       };
     }
@@ -127,8 +127,8 @@ SC.TableRowView = SC.ListItemView.extend({
   updateContentObservers: function(content, lastContent) {
     if (content === lastContent) return;
 
-    if (lastContent) lastContent.removeObserver('*', this, 'displayDidChange'); 
-    if (content) content.addObserver('*', this, 'displayDidChange'); 
+    if (lastContent) lastContent.removeObserver('*', this, 'displayDidChange');
+    if (content) content.addObserver('*', this, 'displayDidChange');
   },
 
 
@@ -152,10 +152,10 @@ SC.TableRowView = SC.ListItemView.extend({
     if (evt) {
       this._$label = [];
       if (evt.clickCount === 2) {
-        var label = $(evt.target),
+        var label = this.$(evt.target),
             contentValueKey = SC.makeArray(this.get('contentValueKey'));
 
-        if (inArray(label.attr("class"), contentValueKey)) this._$label = label;
+        if (contentValueKey.contains(label.attr("class"))) this._$label = label;
       }
     }
 

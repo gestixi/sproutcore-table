@@ -23,20 +23,20 @@ SC.TableDelegate = {
     @default true
   */
   isTableDelegate: true,
-  
+
 
 
 	getSortKey: function(key) {
   	return key;
   },
-  
+
   /*
     Called when someone clicks on a column header view after it has already been
     selected, indicating a request to sort.
-    
+
     To allow the TableView to handle sorting itself, return false to indicate you did
     not handle it.
-    
+
     To handle it yourself, override this method and return true to indicate that
     you're handling the request (i.e. inline, or with a server call, etc).
     When your sort is finished, set the TableView.sort property to update the view
@@ -47,18 +47,18 @@ SC.TableDelegate = {
   },
 
   willRenderTableRow: function(row, context) {
-    
+
   },
-  
+
   /*
     This method is called once per cell being rendered, to generate the content of the
     cell's outer div element.  Override it to add custom content.  By default it simply
     pushes an additional div containing the cell's value as text onto the render context.
-    
+
     This method is called quite often, so keep it fast for the best table performance.
     If you're rendering user-saved data, make sure it's safe as well as this function
     pushes HTML code straight into the DOM.
-    
+
     NOTE: Always return the render context, even if you do nothing with it.  This
     function is a subroutine in an existing render() call.
   */
@@ -68,7 +68,7 @@ SC.TableDelegate = {
   },
 
   willUpdateTableRow: function(row, jQuery) {
-    
+
   },
 
   updateTableCellContent: function(view, jQuery, content, contentIndex, column, key) {
@@ -88,7 +88,7 @@ SC.TableDelegate = {
 	rightClicOnHeadCell: function(tableView, headerView, headerItemView, evt) {},
 
   columnSizeDidChange: function(tableView, headerView, headerItemView, evt, newWidth) {},
-	
+
 	endColumnDrag: function(tableView) {},
 
 };
