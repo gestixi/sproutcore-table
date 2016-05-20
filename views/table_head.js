@@ -171,11 +171,6 @@ SC.TableHeaderView = SC.CollectionView.extend({
 	mouseDown: function(evt) {
     var itemView = this.itemViewForEvent(evt);
 
-		if(evt.which == 3) {
-			this.invokeDelegateMethod('rightClicOnHeadCell', this, itemView, evt);
-      return false;
-    }
-
     // If there is no header, we do not go futher
     if (!itemView) return false;
 
@@ -217,6 +212,13 @@ SC.TableHeaderView = SC.CollectionView.extend({
   },
 
   mouseUp: function(evt) {
+    var itemView = this.itemViewForEvent(evt);
+
+    if (evt.which === 3) {
+      this.invokeDelegateMethod('rightClicOnHeadCell', this, itemView, evt);
+      return true;
+    }
+
     if (this._itemViewWidth) { 
       this._itemViewWidth = null;
 
