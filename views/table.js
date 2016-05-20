@@ -278,7 +278,7 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
   */
   tableColumnDidRequestSort: function(col, colIndex, direction) {
     //console.log('%@.tableColumnDidRequestSort(col: %@, colIndex: %@, direction: %@)'.fmt(this, col, colIndex, direction));
-    if (!col.get('canSort')) return;
+    if (!col.get('isSortable')) return;
 
     var del = this.get('tableDelegate'),
       content = this.get('content'),

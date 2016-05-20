@@ -98,14 +98,6 @@ SC.TableColumn = SC.Object.extend({
     @type Boolean
   */
   isReorderable: true,
-  
-  /**
-    Whether the column can be sorted.
-    
-    @property
-    @type Boolean
-  */
-  isSortable: true,
 
   /*
     Whether or not this column can request to be sorted in response to a click on its header
@@ -114,8 +106,11 @@ SC.TableColumn = SC.Object.extend({
     TableView itself will attempt to sort the column.  Be sure to pay attention to how many
     rows you're trying to sort, as this can take quite some time for large tables and raise
     "unresponsive script" errors in the browser.
+    
+    @property
+    @type Boolean
   */
-  canSort: true,
+  isSortable: true,
   
   /*
     An array of additional CSS class names you would like to apply to this column's

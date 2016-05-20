@@ -44,7 +44,7 @@ SC.TableColumnHeaderView = SC.View.extend(SC.Control, {
     context = context.begin('div').addClass('col-border').end();
     context = context.begin('div').addClass('col-name').text(this.getPath('content.label')).end();
 
-    if (!SC.none(sortDirection) && this.getPath('content.canSort')) {
+    if (!SC.none(sortDirection) && this.getPath('content.isSortable')) {
       context = context.begin('div').addClass(sortDirection).end();
     }
     
