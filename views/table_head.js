@@ -238,11 +238,12 @@ SC.TableHeaderView = SC.CollectionView.extend({
 
     if (this._itemViewWidth) { 
       this._itemViewWidth = null;
-
       return true;
     }
-    
-    return sc_super();
+
+    this.ownerTableView._onColumnAction(this);
+
+    return true;
   },
 	
   

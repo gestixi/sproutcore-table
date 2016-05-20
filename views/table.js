@@ -232,9 +232,6 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         ownerTableView: this,
         allowDeselectAll: true,
         canReorderContentBinding: SC.Binding.from('canReorderColumns', this),
-        target: this,
-        action: '_onColumnAction',
-        actOnSelect: true,
       }),
 			
       hasVerticalScroller: false, // header never scrolls vertically
