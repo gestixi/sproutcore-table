@@ -20,12 +20,11 @@ SC.TableRowView = SC.ListItemView.extend({
 
   classNames: 'sc-table-row-view',
 
-
   contentCheckboxKey: null,
 
   contentValueKey: null,
 
-
+  displayProperties: ['width'],
   /*
     @read-only
   */

@@ -206,6 +206,12 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         canReorderContentBinding: SC.Binding.from('canReorderContent', this).oneWay(),
 				canDeleteContentBinding: SC.Binding.from('canDeleteContent', this).oneWay(),
         canEditContent: !!this.get('contentValueKey'),
+
+        _reconfigureItemView: function (itemView, attrs) {
+          sc_super();
+          itemView.notifyPropertyChange('width');
+        }
+
       }),
 
       isVerticalScrollerVisibleBinding: SC.Binding.from('isVerticalScrollerVisible', this)
