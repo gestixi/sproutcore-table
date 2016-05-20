@@ -234,7 +234,7 @@ SC.TableHeaderView = SC.CollectionView.extend({
     var itemView = this.itemViewForEvent(evt);
 
     if (evt.which === 3) {
-      this.invokeDelegateMethod('rightClicOnHeadCell', this, itemView, evt);
+      this.invokeDelegateMethod('rightClickOnHeadCell', this, itemView, evt);
       return true;
     }
 

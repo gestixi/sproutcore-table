@@ -24,8 +24,6 @@ SC.TableDelegate = {
   */
   isTableDelegate: true,
 
-
-
 	getSortKey: function(key) {
   	return key;
   },
@@ -85,7 +83,7 @@ SC.TableDelegate = {
     return text;
   },
 
-	rightClicOnHeadCell: function(tableView, headerView, headerItemView, evt) {},
+	rightClickOnHeadCell: function(tableView, headerView, headerItemView, evt) {},
 
   columnSizeDidChange: function(tableView, headerView, headerItemView, evt, newWidth) {},
 
