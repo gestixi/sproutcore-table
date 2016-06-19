@@ -73,6 +73,8 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
   */
   contentValueKey: null,
 
+  editableKeys: null,
+
   /*
     @read-only
   */
@@ -195,6 +197,7 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         exampleView: SC.TableRowView.design({
           contentCheckboxKey: this.get('contentCheckboxKey'),
           contentValueKey: this.get('contentValueKey'),
+          editableKeys: this.get('editableKeys')
         }),
 
         tableDelegateBinding: SC.Binding.from('tableDelegate', this).oneWay(),
@@ -205,7 +208,8 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         actionBinding: SC.Binding.from('action', this).oneWay(),
         canReorderContentBinding: SC.Binding.from('canReorderContent', this).oneWay(),
 				canDeleteContentBinding: SC.Binding.from('canDeleteContent', this).oneWay(),
-        canEditContent: !!this.get('contentValueKey'),
+        // canEditContent: !!this.get('contentValueKey'),
+        canEditContent: !!this.get('editableKeys'),
 
         _reconfigureItemView: function (itemView, attrs) {
           sc_super();
