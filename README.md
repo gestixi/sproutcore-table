@@ -1,3 +1,7 @@
+
+# The repository has been moved to: https://github.com/sproutcore/sproutcore-table
+------
+
 #Overview
 
 This is a table view for [Sproutcore](http://www.github.com/sproutcore/sproutcore).
