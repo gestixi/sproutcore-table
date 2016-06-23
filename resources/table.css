@@ -73,9 +73,12 @@
 	}
 	/* Table Rows */
 	.sc-table-body-scroll-view .sc-collection-view.sc-list-view.collection .sc-table-row-view {
- 		div { position: absolute; }
 	  .cell {
+      position: absolute;
+      overflow: hidden;
+
 	  	.text { 
+        position: absolute;
         top: 50%;
         height: 20px;
         margin-top: -8px;
