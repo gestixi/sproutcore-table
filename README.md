@@ -19,5 +19,4 @@ This is a table view for [Sproutcore](http://www.github.com/sproutcore/sproutcor
 ##TODO:
 
   * Improve documentation
-  * Allow cell editing for more than one cell per row
   * Add unit tests
