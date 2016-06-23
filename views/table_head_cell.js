@@ -14,7 +14,7 @@
 SC.TableColumnHeaderView = SC.View.extend(SC.Control, {
 
   classNames: 'sc-table-column-header-view',
-  
+
   isReusable: false,
 
   /*
@@ -23,7 +23,7 @@ SC.TableColumnHeaderView = SC.View.extend(SC.Control, {
   sortDirection: null,
 
   displayProperties: ['sortDirection'],
-	
+
   /*
     Min width for resize dragging.
   */
@@ -36,7 +36,7 @@ SC.TableColumnHeaderView = SC.View.extend(SC.Control, {
     context.setClass('sort-indicator', !SC.none(sortDirection));
 
     context = context.addClass('col-%@'.fmt(this.get('contentIndex')));
-		
+
     if (classNames) {
       context = context.addClass(classNames);
     }
@@ -47,10 +47,10 @@ SC.TableColumnHeaderView = SC.View.extend(SC.Control, {
     if (!SC.none(sortDirection) && this.getPath('content.isSortable')) {
       context = context.begin('div').addClass(sortDirection).end();
     }
-    
+
     if (this.getPath('content.canResize')) {
       context = context.begin('div').addClass('resize-handle').end();
     }
   },
-  
+
 });

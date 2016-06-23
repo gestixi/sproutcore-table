@@ -13,7 +13,7 @@ sc_require('mixins/table_delegate');
 
 /*
   A TableView for viewing tabular data using Sproutcore.
-  
+
   Connect an array of row objects to the 'content' property.
   Define your column set by connecting an array of objects mixin in
   SC.Column to the 'columns' property.  Each of which may be a binding
@@ -46,13 +46,13 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
     Row height in pixels.
   */
   rowHeight: 20,
-	
+
   showAlternatingRows: true,
-	
+
 	canReorderContent: false,
-	
+
 	canDeleteContent: false,
-	
+
   /*
     Target for action fired when double-clicking on a row
   */
@@ -72,6 +72,8 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
     Array of properties that will be éditable
   */
   contentValueKey: null,
+
+  editableKeys: null,
 
   /*
     @read-only
@@ -95,18 +97,18 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
 
   /*
     Set this to show which column is being sorted in which direction.
-    
+
     ** This property is for view purposes only -- it does not actually cause any sorting
     to take place.  You have to sort your data yourself, then set this property to show
     what you did. **
-    
+
     Should be a hash of the form:
-    
+
       {
         key: '(property name on which to sort)',
         direction: SC.SORT_DIRECTION_ enumeration (see core.js for available definitions)
       }
-      
+
     Note that the inner properties of this hash are not observed, so to change them,
     you should set the entire hash to a new object.
   */
@@ -127,32 +129,32 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
     certain table functionality, such as sorting and table cell rendering.
   */
   delegate: null,
-  
+
   /*
     @read-only
     For internal use.  The various components of the table view query this
     property for a delegate object mixing in SC.TableDelegate.  This property
     tries several possibilities in this order:
-    
+
       1. The 'delegate' property above
       2. The 'content' property above (this would usually be via a content-providing array controller having the mixin)
       3. This TableView itself, which always has the mixin as a last resort.
   */
   tableDelegate: function() {
-    var del = this.get('delegate'), 
+    var del = this.get('delegate'),
         content = this.get('content');
 
     // @if (debug)
     if (del && !del.isTableDelegate) {
-      console.error("A delegate is defined but it doesn't implement SC.TableDelegate.");
+      SC.warn("A delegate is defined but it doesn't implement SC.TableDelegate.");
     }
     if (!del && content && !content.isTableDelegate) {
-      console.error("content is defined but it doesn't implement SC.TableDelegate.", content);
+      SC.warn("content is defined but it doesn't implement SC.TableDelegate.", content);
     }
     // @endif
 
     // defaults to 'this' if neither 'del' or 'content' have the SC.TableDelegate mixin
-    return this.delegateFor('isTableDelegate', del, content); 
+    return this.delegateFor('isTableDelegate', del, content);
   }.property('delegate', 'content').cacheable(),
 
   /*
@@ -172,11 +174,11 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
     return ret;
   }.property().cacheable(),
 
-  
+
   createChildViews: function() {
     sc_super();
-    
-    var headerScrollView, bodyScrollView,
+
+    var headerScrollView, bodyScrollView, headerBackGroundView,
         headerHeight = this.get('headerHeight'),
         tableWidth = this.get('tableWidth');
 
@@ -189,12 +191,13 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         contentBinding: SC.Binding.from('content', this),
         columnsBinding: SC.Binding.from('columns', this).oneWay(),
         selectionBinding: SC.Binding.from('selection', this),
-        
+
         rowHeight: this.get('rowHeight'),
 
         exampleView: SC.TableRowView.design({
           contentCheckboxKey: this.get('contentCheckboxKey'),
           contentValueKey: this.get('contentValueKey'),
+          editableKeys: this.get('editableKeys')
         }),
 
         tableDelegateBinding: SC.Binding.from('tableDelegate', this).oneWay(),
@@ -205,21 +208,28 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         actionBinding: SC.Binding.from('action', this).oneWay(),
         canReorderContentBinding: SC.Binding.from('canReorderContent', this).oneWay(),
 				canDeleteContentBinding: SC.Binding.from('canDeleteContent', this).oneWay(),
-        canEditContent: !!this.get('contentValueKey'),
+        // canEditContent: !!this.get('contentValueKey'),
+        canEditContent: !!this.get('editableKeys'),
+
+        _reconfigureItemView: function (itemView, attrs) {
+          sc_super();
+          itemView.notifyPropertyChange('width');
+        }
+
       }),
 
       isVerticalScrollerVisibleBinding: SC.Binding.from('isVerticalScrollerVisible', this)
     });
     this._bodyScrollView = bodyScrollView;
     this._bodyView = bodyScrollView.get('contentView');
-		
+
 		// Afin que le background soit visible sur toute la largeur du header, meme au dessus de la scroll bar car celui-ci est
 		// ajusté par la suite pour éviter qu'il se décale lors d'un scroll vers la droite
-		headerBackGroundView = this.createChildView(SC.View, { 
+		headerBackGroundView = this.createChildView(SC.View, {
 			layout: { left: 0, right: 0, top: 0, height: headerHeight },
-			classNames: 'sc-table-header-background-view', 
+			classNames: 'sc-table-header-background-view',
 		});
-			
+
     headerScrollView = this.createChildView(SC.ScrollView, {
       classNames: 'sc-table-header-scroll-view',
       layout: { left: 0, right: 0, top: 0, height: headerHeight },
@@ -233,9 +243,9 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         allowDeselectAll: true,
         canReorderContentBinding: SC.Binding.from('canReorderColumns', this),
       }),
-			
+
       hasVerticalScroller: false, // header never scrolls vertically
-      
+
       // We have to keep a horizontal scroller, but we never want to see it in the header,
       // so make its thickness 0.
       horizontalScrollerView: SC.ScrollerView.extend({ scrollbarThickness: 0 }),
@@ -254,7 +264,7 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
 
     this.set('childViews', childViews);
   },
-  
+
   /*
     Force a reload of both header and body collection views.
   */
@@ -264,7 +274,7 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
     if (this._headerView) {
       this._headerView.reload();
     }
-    
+
     if (this._bodyView) {
       this._bodyView.reload();
     }
@@ -281,12 +291,12 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
       content = this.get('content'),
       dir = direction ? direction : SC.SORT_DIRECTION_NONE,
       didSort = false, key;
-		
+
     //console.log('%@._sortContent()'.fmt(this));
-    
+
     if (del && del.tableDidRequestSort && !del.tableDidRequestSort(this, content, col, colIndex, dir)) {
     	key = col.get('key');
-    	
+
       if (SC.kindOf(content, SC.ArrayController)) {
         if (dir === SC.SORT_DIRECTION_ASCENDING) content.set('orderBy', '%@ ASC'.fmt(key));
         else if (dir === SC.SORT_DIRECTION_DESCENDING) content.set('orderBy', '%@ DESC'.fmt(key));
@@ -300,9 +310,9 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
         didSort = true;
       }
       else {
-        console.warn('Error in TableView(%@)._sortContent(): Content type is not recognized as sortable.'.fmt(this));
+        SC.warn('Error in TableView(%@)._sortContent(): Content type is not recognized as sortable.'.fmt(this));
       }
-      
+
       // Update the view to show how we're sorting over now.
       if (didSort) {
         this.set('sort', { key: key, direction: dir });
@@ -335,11 +345,11 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
   _tableWidthDidChange: function() {
     this.invokeOnce('_updateTableLayout');
   }.observes('tableWidth'),
-  
+
   _tv_frameDidChange: function() {
     this.invokeOnce('_updateTableLayout'); // forces scroll bars to update
   }.observes('frame'),
-  
+
   _updateTableLayout: function() {
     var tableWidth = this.get('tableWidth');
     var visibleWidth = this._bodyScrollView.getPath('containerView.frame').width;
@@ -348,18 +358,18 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
     //console.log('%@._updateTableLayout(width: %@)'.fmt(this, newWidth));
 
     this.beginPropertyChanges();
-		
+
 
     if (this._headerScrollView) {
     	this._headerScrollView.adjust({ right: this._bodyScrollView.get('frame').width - visibleWidth });
     }
-		
+
 
     if (this._headerView) {
       this._headerView.adjust({ minWidth: newWidth });
       this._headerView.set('calculatedWidth', newWidth);
     }
-    
+
     if (this._bodyView) {
       this._bodyView.adjust({ minWidth: newWidth });
       this._bodyView.set('calculatedWidth', newWidth);
@@ -368,19 +378,18 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
     this.endPropertyChanges();
   },
 
-  
+
   /*
     Handles clicks on column headers.
   */
   _onColumnAction: function(sender) {
-    var del = this.get('tableDelegate'),
-    		selection = sender ? sender.get('selection') : null;
+    var selection = sender ? sender.get('selection') : null;
     var col, sort, dir = SC.SORT_DIRECTION_ASCENDING, key;
 
     if (selection && (selection.get('length') === 1)) {
       col = selection.get('firstObject');
       sort = this.get('sort');
-      
+
       key = col.get('key');
 
 			// Le premier clic tri ASC - Le deuxieme clic tri DEC - Le troisième annule le tri
@@ -389,19 +398,19 @@ SC.TableView = SC.View.extend(SC.TableDelegate, {
 				else if (sort.direction === SC.SORT_DIRECTION_DESCENDING) {
 						// Si le content est vient d'un arrayController, alors, on permet l'annulation de tri au bout de trois clic
 						// On ne peut pas annuler le tri si c'est au array normal car le tri initial n'est pas mémorisé
-      		 if (SC.kindOf(this.get('content'), SC.ArrayController)) dir = null; 
+      		 if (SC.kindOf(this.get('content'), SC.ArrayController)) dir = null;
       		 else dir = SC.SORT_DIRECTION_ASCENDING;
       	}
 			}
-      
+
       this.tableColumnDidRequestSort(col, this.get('columns').indexOf(col), dir);
     }
 
     this._lastColumnSelection = selection;
   },
-  
+
   // PRIVATE PROPERTIES
-  
+
   _headerScrollView: null,
   _headerView: null,
   _bodyScrollView: null,

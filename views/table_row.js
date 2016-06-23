@@ -15,16 +15,16 @@
 SC.TableRowView = SC.ListItemView.extend({
 
   isReusable: true,
-  
-  // PUBLIC PROPERTIES
-  
-  classNames: 'sc-table-row-view',
 
+  // PUBLIC PROPERTIES
+
+  classNames: 'sc-table-row-view',
 
   contentCheckboxKey: null,
 
   contentValueKey: null,
-  
+
+  displayProperties: ['width'],
 
   /*
     @read-only
@@ -32,22 +32,18 @@ SC.TableRowView = SC.ListItemView.extend({
   tableDelegate: function() {
     return this.getPath('displayDelegate.tableDelegate');
   }.property('displayDelegate').cacheable(),
-  
 
   
-  // PUBLIC METHODS
-
-
   render: function(context) {
     var tableDelegate = this.get('tableDelegate'),
-        left = 3, 
+        left = 3,
         content = this.get('content'),
         contentIndex = this.contentIndex,
-        columns = this.getPath('displayDelegate.columns'),
+        columns = this.getDelegateProperty('columns', this.displayDelegate),
         contentCheckboxKey = this.contentCheckboxKey,
         columnsLength = columns.length,
         alternate = ((contentIndex % 2 === 0) ? 'even' : 'odd'),
-        col, key;
+        col, key, width;
 
     this.updateContentObservers(content, null);
 
@@ -64,18 +60,18 @@ SC.TableRowView = SC.ListItemView.extend({
       width = col.width || 0;
       context = context.push('<div class="cell col-'+index+'" style="left: '+left+'px; top: 0px; bottom: 0px; width: '+width+'px;">');
 
-      if (contentCheckboxKey && inArray(key, contentCheckboxKey)) {
-        var value = content ? (content.get ? content.get(key) : content[key]) : false;
+      if (contentCheckboxKey && contentCheckboxKey.contains(key)) {
+        var value = SC.get(content, key) || false;
         this.renderCheckbox(context, value);
       }
       else {
         tableDelegate.renderTableCellContent(this, context, content, contentIndex, col, key);
       }
-      
+
       context = context.push('</div>');
 
       left += width;
-    };
+    }
   },
 
 
@@ -90,7 +86,7 @@ SC.TableRowView = SC.ListItemView.extend({
         otherAlternate = ((contentIndex % 2 !== 0) ? 'even' : 'odd'),
         alternate = ((contentIndex % 2 === 0) ? 'even' : 'odd'),
         contentCheckboxKey = this.contentCheckboxKey,
-        col, key, $cell; 
+        col, key, $cell;
 
     this.updateContentObservers(content, lastContent);
 
@@ -98,7 +94,7 @@ SC.TableRowView = SC.ListItemView.extend({
 
     jQuery.removeClass(otherAlternate);
     jQuery.addClass(alternate);
-    
+
     if (content && columns && columns.isEnumerable) {
       for (var index=0; index < columnsLength; index++) {
         col = columns[index];
@@ -106,18 +102,18 @@ SC.TableRowView = SC.ListItemView.extend({
         width = col.width || 0;
 
         $cell = jQuery.find('.cell.col-'+index);
-        $cell.css({ width: width+'px', left: left+'px', })
+        $cell.css({ width: width+'px', left: left+'px', });
 
-        if (contentCheckboxKey && inArray(key, contentCheckboxKey)) {
-          var value = content ? (content.get ? content.get(key) : content[key]) : false;
+        if (contentCheckboxKey && contentCheckboxKey.contains(key)) {
+          var value = SC.get(content, key) || false;
           this.updateCheckbox($cell, value);
         }
         else {
           tableDelegate.updateTableCellContent(this, $cell, content, contentIndex, col, key);
         }
-        
+
         left += width;
-      };
+      }
     }
 
     this._lastContent = content;
@@ -127,8 +123,8 @@ SC.TableRowView = SC.ListItemView.extend({
   updateContentObservers: function(content, lastContent) {
     if (content === lastContent) return;
 
-    if (lastContent) lastContent.removeObserver('*', this, 'displayDidChange'); 
-    if (content) content.addObserver('*', this, 'displayDidChange'); 
+    if (lastContent) lastContent.removeObserver('*', this, 'displayDidChange');
+    if (content) content.addObserver('*', this, 'displayDidChange');
   },
 
 
@@ -145,17 +141,38 @@ SC.TableRowView = SC.ListItemView.extend({
   },
 
 
+  // ..........................................................
   // LABEL EDTITING
+  //
 
-  // TODO only one cell can currently be edited.
   $label: function (evt) {
+    var columns = this.getPath('displayDelegate.columns');
+
     if (evt) {
       this._$label = [];
       if (evt.clickCount === 2) {
-        var label = $(evt.target),
-            contentValueKey = SC.makeArray(this.get('contentValueKey'));
+        var label = this.$(evt.target),
+            editableKeys = this.get('editableKeys');
 
-        if (inArray(label.attr("class"), contentValueKey)) this._$label = label;
+        // take the parent, as it indicates the column we are in
+        var match = null,
+          parent = label,
+          maxIteration = 10;
+
+        while (!match && parent && maxIteration) {
+          match = /col-([0-9])/.exec(parent.attr("class"));
+          if (!match) parent = parent.parent();
+          maxIteration--;
+        }
+        if (match) {
+          // column number is in match[1]
+          var colnr = parseInt(match[1], 10);
+          var colname = columns[colnr].key;
+          if (editableKeys.contains(colname)){
+            this.contentValueKey = colname; // this will allow editing the right field
+            this._$label = parent;
+          }
+        }
       }
     }
 
@@ -163,7 +180,39 @@ SC.TableRowView = SC.ListItemView.extend({
   },
 
 
+  /** @private
+    Returns true if a click is on the label text itself to enable editing.
+
+    Note that if you override renderLabel(), you probably need to override
+    this as well, or just $label() if you only want to control the element
+    returned.
+
+    @param evt {Event} the mouseUp event.
+    @returns {Boolean} YES if the mouse was on the content element itself.
+  */
+  contentHitTest: function (evt) {
+    // if not content value is returned, not much to do.
+    var del = this.displayDelegate;
+    var labelKeys = this.getDelegateProperty('editableKeys', del);
+    if (!labelKeys) return NO;
+
+    // get the element to check for.
+    var el = this.$label(evt)[0];
+    if (!el) return NO; // no label to check for.
+
+    var cur = evt.target, layer = this.get('layer');
+    while (cur && (cur !== layer) && (cur !== window)) {
+      if (cur === el) return YES;
+      cur = cur.parentNode;
+    }
+
+    return NO;
+  },
+
+
+  // ..........................................................
   // CHECKBOX EDTITING
+  //
 
   updateCheckbox: function (jQuery, state) {
     var renderer = this.get('theme').checkboxRenderDelegate;
@@ -171,7 +220,7 @@ SC.TableRowView = SC.ListItemView.extend({
     var source = this._checkboxRenderSource;
     if (!source) {
       source = this._checkboxRenderSource =
-      SC.Object.create({ renderState: {}, theme: this.get('theme') });
+        SC.Object.create({ renderState: {}, theme: this.get('theme') });
     }
 
     source
